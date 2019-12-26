@@ -89,7 +89,7 @@ services:
     environment:
       CACHE_DIR: gs://davinci_example_bovespa
       IO_GS_PROJECT: centering-badge-212119
-      CHROMIUM_BIN_FILE: chromium
+      CHROMIUM_BIN_FILE: /usr/bin/chromium
       GOOGLE_APPLICATION_CREDENTIALS: /tfm_uoc_crawling_system/crawling-storage-cache.json
     container_name: tfm_uoc_crawling_system_app
     hostname: tfm_uoc_crawling_system_app
@@ -104,9 +104,9 @@ services:
       context: ../tfm_uoc_crawling_system
       dockerfile: environment/dev-local/Dockerfile
     environment:
-      CACHE_DIR: gs://davinci_example_bovespa
+      DAVINCI_CACHE_DIR: gs://davinci_example_bovespa
       IO_GS_PROJECT: centering-badge-212119
-      CHROMIUM_BIN_FILE: chromium
+      CHROMIUM_BIN_FILE: /usr/bin/chromium
       GOOGLE_APPLICATION_CREDENTIALS: /tfm_uoc_crawling_system/crawling-storage-cache.json
     depends_on:
       - tfm-uoc-postgres
@@ -114,7 +114,7 @@ services:
       - tfm-uoc-dse
     container_name: tfm_uoc_crawling_system_producer
     hostname: tfm_uoc_crawling_system_producer
-    command: python manage.py crawl_params bovespa --workers-num 1 --chromium-bin-file /usr/bin/chromium --io-gs-project centering-badge-212119 --cache-dir "gs://davinci_example_bovespa" --local-dir "fs:///tfm_uoc_crawling_system/cache"
+    command: python manage.py crawl_params bovespa
     volumes:
       - ../tfm_uoc_crawling_system:/tfm_uoc_crawling_system
       - ./cache:/tfm_uoc_crawling_system/cache
@@ -128,7 +128,7 @@ services:
     environment:
       CACHE_DIR: gs://davinci_example_bovespa
       IO_GS_PROJECT: centering-badge-212119
-      CHROMIUM_BIN_FILE: chromium
+      CHROMIUM_BIN_FILE: /usr/bin/chromium
       GOOGLE_APPLICATION_CREDENTIALS: /tfm_uoc_crawling_system/crawling-storage-cache.json
     depends_on:
       - tfm-uoc-postgres
@@ -136,7 +136,7 @@ services:
       - tfm-uoc-dse
     container_name: tfm_uoc_crawling_system_consumer
     hostname: tfm_uoc_crawling_system_consumer
-    command: python manage.py crawl bovespa --workers-num 1 --chromium-bin-file /usr/bin/chromium --io-gs-project centering-badge-212119 --cache-dir "gs://davinci_example_bovespa" --local-dir "fs:///tfm_uoc_crawling_system/cache"
+    command: python manage.py crawl bovespa
     volumes:
       - ../tfm_uoc_crawling_system:/tfm_uoc_crawling_system
       - ./cache:/tfm_uoc_crawling_system/cache
