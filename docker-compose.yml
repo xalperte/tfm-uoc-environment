@@ -13,6 +13,8 @@ services:
     container_name: tfm_uoc_postgres
     environment:
       POSTGRES_PASSWORD: admin
+    volumes:
+      - ./data/postgres:/var/lib/postgresql/data
     networks:
       - backend
     restart: unless-stopped
@@ -27,8 +29,6 @@ services:
       ports:
         - "8888:8888"
         - "4040-4080:4040-4080"
-      hostname: tfm_uoc_spark
-      container_name: tfm_uoc_spark
       volumes:
         - ../tfm_uoc_crawling_system/src/notebooks:/home/jovyan/work/notebooks/
       networks:
@@ -67,7 +67,7 @@ services:
       # - ./dse/cassandra.yaml:/opt/dse/resources/cassandra/conf/jvm.options
       - ./data/cassandra:/var/lib/cassandra
       - ./log/cassandra:/var/log/cassandra
-    #  - ./dse/config:/config
+      - ./dse:/config
     networks:
       - backend
     command: -s -g
@@ -86,11 +86,12 @@ services:
       - tfm-uoc-postgres
       - tfm-uoc-redis
       - tfm-uoc-dse
+    shm_size: 512mb
     environment:
       CACHE_DIR: gs://davinci_example_bovespa
       IO_GS_PROJECT: centering-badge-212119
-      CHROMIUM_BIN_FILE: /usr/bin/chromium
       GOOGLE_APPLICATION_CREDENTIALS: /tfm_uoc_crawling_system/crawling-storage-cache.json
+      LOGGING_FILE: /tfm_uoc_crawling_system/tfm_uoc_crawling_system_APP.log
     container_name: tfm_uoc_crawling_system_app
     hostname: tfm_uoc_crawling_system_app
     command: python manage.py runserver 0.0.0.0:8000
@@ -98,6 +99,7 @@ services:
       - ../tfm_uoc_crawling_system:/tfm_uoc_crawling_system
     networks:
       - backend
+
   tfm-uoc-crawling-system-producer:
     image: xalperte/tfm-uoc-crawling-system:latest
     build:
@@ -106,20 +108,22 @@ services:
     environment:
       DAVINCI_CACHE_DIR: gs://davinci_example_bovespa
       IO_GS_PROJECT: centering-badge-212119
-      CHROMIUM_BIN_FILE: /usr/bin/chromium
       GOOGLE_APPLICATION_CREDENTIALS: /tfm_uoc_crawling_system/crawling-storage-cache.json
+      LOGGING_FILE: /tfm_uoc_crawling_system/tfm_uoc_crawling_system_PRODUCER.log
     depends_on:
       - tfm-uoc-postgres
       - tfm-uoc-redis
       - tfm-uoc-dse
+    shm_size: 512mb
     container_name: tfm_uoc_crawling_system_producer
     hostname: tfm_uoc_crawling_system_producer
-    command: python manage.py crawl_params bovespa
+    command: python manage.py crawl_params bovespa  --workers-num 15 --no-update-companies-files --no-update-companies-listing --chromium-bin-file /usr/bin/chromium --io-gs-project centering-badge-212119 --cache-dir "gs://davinci_example_bovespa" --local-dir "fs:///tfm_uoc_crawling_system/cache"
     volumes:
       - ../tfm_uoc_crawling_system:/tfm_uoc_crawling_system
       - ./cache:/tfm_uoc_crawling_system/cache
     networks:
       - backend
+
   tfm-uoc-crawling-system-consumer:
     image: xalperte/tfm-uoc-crawling-system:latest
     build:
@@ -128,15 +132,16 @@ services:
     environment:
       CACHE_DIR: gs://davinci_example_bovespa
       IO_GS_PROJECT: centering-badge-212119
-      CHROMIUM_BIN_FILE: /usr/bin/chromium
       GOOGLE_APPLICATION_CREDENTIALS: /tfm_uoc_crawling_system/crawling-storage-cache.json
+      LOGGING_FILE: /tfm_uoc_crawling_system/tfm_uoc_crawling_system_CONSUMER.log
     depends_on:
       - tfm-uoc-postgres
       - tfm-uoc-redis
       - tfm-uoc-dse
+    shm_size: 512mb
     container_name: tfm_uoc_crawling_system_consumer
     hostname: tfm_uoc_crawling_system_consumer
-    command: python manage.py crawl bovespa
+    command: python manage.py crawl bovespa --workers-num 15 --chromium-bin-file /usr/bin/chromium --io-gs-project centering-badge-212119 --cache-dir "gs://davinci_example_bovespa" --local-dir "fs:///tfm_uoc_crawling_system/cache"
     volumes:
       - ../tfm_uoc_crawling_system:/tfm_uoc_crawling_system
       - ./cache:/tfm_uoc_crawling_system/cache

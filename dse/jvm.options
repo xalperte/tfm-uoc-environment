@@ -1,3 +1,5 @@
+# DSE Config Version: 6.7.7
+
 ###########################################################################
 #                             jvm.options                                 #
 #                                                                         #
@@ -45,6 +47,32 @@
 # dead node. The new node must not have any data in its data directory, that is, it must be in the
 # same state as before bootstrapping.
 #-Dcassandra.replace_address=listen_address or broadcast_address of dead node
+
+# Use this option to perform consistent replace, where the replacement node will coordinate an anti-entropy
+# (repair) job with a majority of replicas during the replacement process ensuring the node has the
+# specified consistency after replacement is completed.
+#
+# The default option ONE will only stream data from a single replica, which may be inconsistent. It is
+# recommended to specify a value different from the default when reading/writing at QUORUM/LOCAL_QUORUM.
+# Alternatively it's possible to run repair after replacement is completed, but stale data may be returned
+# before the repair is finished.
+#
+# Available options: ONE(default), LOCAL_QUORUM, QUORUM. Only valid when combined with
+# -Dcassandra.replace_address or -Dcassandra.replace_address_first_boot options.
+#
+#-Ddse.consistent_replace=ONE
+
+# Specifies how many ranges will be repaired simultaneously during consistent replace. The higher the
+# parallelism, the more resources will be consumed cluster-wide, what may affect cluster performance.
+#-Ddse.consistent_replace.parallelism=2
+
+# Specifies how many times a failed repair will be retried during consistent replace.
+# If all retries fail, consistent replace will fail, but can be resumed with nodetool bootstrap resume.
+#-Ddse.consistent_replace.retries=3
+
+# Targeted keyspaces or tables for consistent replace can be specified as: "ks1, ks2.cf1",
+# By default it's empty, all tables and keyspaces will be consistent replaced
+#-Ddse.consistent_replace.whitelist=
 
 # Allow restoring specific tables from an archived commit log.
 #-Dcassandra.replayList=table
@@ -123,9 +151,6 @@
 # comment out this entry to enable IPv6 support).
 -Djava.net.preferIPv4Stack=true
 
-# Align direct memory allocations
--Dsun.nio.PageAlignDirectMemory=true
-
 # Honor user code @Contended annotations
 -XX:-RestrictContended
 
@@ -193,6 +218,14 @@
 # times. If in doubt, and if you do not particularly want to tweak, go
 # 100 MB per physical CPU core.
 -Xmn800M
+
+################
+# NIO SETTINGS #
+################
+
+# Limit maximum cached thread local direct buffer to 1MB to avoid native OOM
+# See https://bugs.openjdk.java.net/browse/JDK-8147468
+-Djdk.nio.maxCachedBufferSize=1048576
 
 ###################################
 # EXPIRATION DATE OVERFLOW POLICY #
@@ -270,5 +303,13 @@
 # Netty queue limit (per core). Effectively acts as an amount of "pending" requests scheduled by Netty
 # and tasks scheduled from TPC tasks.
 -Dio.netty.eventLoop.maxPendingTasks=65536
+
+# Uncomment this property to configure the type of off-heap memory used by network byte buffer allocators (Netty allocators).
+# Setting this value to zero means that Netty allocations are performed with the JVM NIO allocators, therefore are subject to the limit set with -XX:MaxDirectMemorySize.
+# Setting this to -1 (the default) or to a positive value means that Netty will allocate native memory directly, bypassing the JVM direct memory metrics and thresholds.
+# With -1 the maximum allocated memory is the same as what's specified with -XX:MaxDirectMemorySize, whereas setting it to a positive value will set a specific limit.
+# Note that in future releases (6.8 onwards) the default value of this property will change from -1 to 0. Uncommenting this value sooner is safe, but may require
+# higher direct memory limits by setting the MAX_DIRECT_MEMORY environment variable, which in turns will set -XX:MaxDirectMemorySize.
+#-Dio.netty.maxDirectMemory=-1
 
 # The newline in the end of file is intentional

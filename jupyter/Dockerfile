@@ -1,4 +1,5 @@
 FROM jupyter/all-spark-notebook:latest
+# FROM jupyter/pyspark-notebook
 
 LABEL maintainer="Xavier Alperte <javier.alperte@gmail.com>"
 
@@ -14,4 +15,5 @@ RUN pip install dse-driver \
     && conda install -y pandas \
     && conda install -y -c conda-forge altair vega_datasets \
     && conda install -y -c conda-forge ipywidgets \
-    && conda install -y nodejs
+    && conda install -y nodejs \
+    && pip install ipython-autotime
