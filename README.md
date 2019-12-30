@@ -5,17 +5,26 @@ environment in local using docker-compose.
 
 The first we need to do is to build the docker image of the project.
 
+The images are divided into `base-images` and project images. The `base-images`
+builds the common aspects shared by any application built on top of DaVinci 
+Crawling Framework. When building the base images you need to add two 
+build arguments that will add your ssh keys into the image so we can
+clone the private dependencies while installing requirements for python.
 
-When building images you need to add two build arguments that will add 
-your ssh keys into the image so we can clone the private dependencies
-while installing requirements for python.
-
-You can find an example below (change id_rsa with the name of your ssh key):
+Run the following sentence to build the base images:
 
 ```bash
-docker-compose build --build-arg ssh_prv_key="$(cat ~/.ssh/id_rsa)" --build-arg ssh_pub_key="$(cat ~/.ssh/id_rsa.pub)"
+cd base-images
+./build.sh ~/.ssh/id_rsa ~/.ssh/id_rsa.pub
 ```
+
 If your key is not in `id_rsa` remember to change this on the script.
+
+After the base images have been built we are ready to build our project images
+
+```bash
+docker-compose build
+```
 
 Your build is not working? Probably you're missing a required step to build
  our images, we need to specify our private ssh keys to be able to have access
@@ -23,6 +32,13 @@ Your build is not working? Probably you're missing a required step to build
 
 Follow [this instructions](https://help.github.com/en/enterprise/2.17/user/authenticating-to-github/adding-a-new-ssh-key-to-your-github-account) 
 in order to setup your GitHub account with a valid key. 
+
+A last step is to create the folders where the databases content will be hold:
+
+```shell script
+mkdir -p ./data/postgres
+mkdir -p ./data/cassandra
+```
 
 ## Containers
 
@@ -53,8 +69,6 @@ The following steps should be executed.
 
 - Migrate databases:
 ``` bash
-mkdir -p ./data/postgres
-mkdir -p ./data/cassandra
 docker-compose exec tfm-uoc-crawling-system-app python manage.py migrate
 docker-compose exec tfm-uoc-crawling-system-app python manage.py sync_cassandra
 docker-compose exec tfm-uoc-crawling-system-app python manage.py sync_indexes

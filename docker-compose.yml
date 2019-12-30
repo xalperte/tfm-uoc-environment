@@ -8,7 +8,7 @@ services:
       context: ./postgres
       dockerfile: Dockerfile
     ports:
-      - 6543:5432
+      - 5432:5432
     hostname: tfm_uoc_postgres
     container_name: tfm_uoc_postgres
     environment:
@@ -16,7 +16,7 @@ services:
     volumes:
       - ./data/postgres:/var/lib/postgresql/data
     networks:
-      - backend
+      - tfm-uoc-backend
     restart: unless-stopped
   # ------ POSTGRES SERVICE ------ #
 
@@ -32,18 +32,18 @@ services:
       volumes:
         - ../tfm_uoc_crawling_system/src/notebooks:/home/jovyan/work/notebooks/
       networks:
-        - backend
+        - tfm-uoc-backend
   # ------ SPARK & JUPYTER SERVICE ------ #
 
   # ------ REDIS SERVICE ------ #
   tfm-uoc-redis:
     image: redis:3.0
-    ports:
-      - 6379:6379
+    # ports:
+    #  - 6379:6379
     hostname: tfm_uoc_redis
     container_name: tfm_uoc_redis
     networks:
-      - backend
+      - tfm-uoc-backend
     restart: unless-stopped
   # ------ REDIS SERVICE ------ #
 
@@ -69,7 +69,7 @@ services:
       - ./log/cassandra:/var/log/cassandra
       - ./dse:/config
     networks:
-      - backend
+      - tfm-uoc-backend
     command: -s -g
     restart: unless-stopped
   # ------ DSE CLUSTER SERVICE ------ #
@@ -81,7 +81,7 @@ services:
       context: ../tfm_uoc_crawling_system
       dockerfile: environment/dev-local/Dockerfile
     ports:
-      - 8001:8000
+      - 8005:8000
     depends_on:
       - tfm-uoc-postgres
       - tfm-uoc-redis
@@ -98,7 +98,7 @@ services:
     volumes:
       - ../tfm_uoc_crawling_system:/tfm_uoc_crawling_system
     networks:
-      - backend
+      - tfm-uoc-backend
 
   tfm-uoc-crawling-system-producer:
     image: xalperte/tfm-uoc-crawling-system:latest
@@ -117,12 +117,12 @@ services:
     shm_size: 512mb
     container_name: tfm_uoc_crawling_system_producer
     hostname: tfm_uoc_crawling_system_producer
-    command: python manage.py crawl_params bovespa  --workers-num 15 --no-update-companies-files --no-update-companies-listing --chromium-bin-file /usr/bin/chromium --io-gs-project centering-badge-212119 --cache-dir "gs://davinci_example_bovespa" --local-dir "fs:///tfm_uoc_crawling_system/cache"
+    command: python manage.py crawl_params bovespa  --workers-num 15 --chromium-bin-file /usr/bin/chromium --io-gs-project centering-badge-212119 --cache-dir "gs://davinci_example_bovespa" --local-dir "fs:///tfm_uoc_crawling_system/cache" --include-companies 13773 4170 --crawling-initials P V
     volumes:
       - ../tfm_uoc_crawling_system:/tfm_uoc_crawling_system
       - ./cache:/tfm_uoc_crawling_system/cache
     networks:
-      - backend
+      - tfm-uoc-backend
 
   tfm-uoc-crawling-system-consumer:
     image: xalperte/tfm-uoc-crawling-system:latest
@@ -146,11 +146,11 @@ services:
       - ../tfm_uoc_crawling_system:/tfm_uoc_crawling_system
       - ./cache:/tfm_uoc_crawling_system/cache
     networks:
-      - backend
+      - tfm-uoc-backend
   # ------ TFM CRAWLING SERVICES ------ #
 
 networks:
-  backend:
+  tfm-uoc-backend:
     # Use a custom driver
-    name: backend
+    name: tfm-uoc-backend
     driver: bridge
