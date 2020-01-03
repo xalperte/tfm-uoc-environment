@@ -117,7 +117,7 @@ services:
     shm_size: 512mb
     container_name: tfm_uoc_crawling_system_producer
     hostname: tfm_uoc_crawling_system_producer
-    command: python manage.py crawl_params bovespa  --workers-num 15 --chromium-bin-file /usr/bin/chromium --io-gs-project centering-badge-212119 --cache-dir "gs://davinci_example_bovespa" --local-dir "fs:///tfm_uoc_crawling_system/cache" --include-companies 13773 4170 --crawling-initials P V
+    command: python manage.py crawl_params bovespa  --workers-num 15 --chromium-bin-file /usr/bin/chromium --io-gs-project centering-badge-212119 --cache-dir "gs://davinci_example_bovespa" --local-dir "fs:///tfm_uoc_crawling_system/cache"
     volumes:
       - ../tfm_uoc_crawling_system:/tfm_uoc_crawling_system
       - ./cache:/tfm_uoc_crawling_system/cache
@@ -141,7 +141,7 @@ services:
     shm_size: 512mb
     container_name: tfm_uoc_crawling_system_consumer
     hostname: tfm_uoc_crawling_system_consumer
-    command: python manage.py crawl bovespa --workers-num 15 --chromium-bin-file /usr/bin/chromium --io-gs-project centering-badge-212119 --cache-dir "gs://davinci_example_bovespa" --local-dir "fs:///tfm_uoc_crawling_system/cache"
+    command: python manage.py crawl bovespa --workers-num 20 --chromium-bin-file /usr/bin/chromium --io-gs-project centering-badge-212119 --cache-dir "gs://davinci_example_bovespa" --local-dir "fs://tfm_uoc_crawling_system/cache"
     volumes:
       - ../tfm_uoc_crawling_system:/tfm_uoc_crawling_system
       - ./cache:/tfm_uoc_crawling_system/cache
