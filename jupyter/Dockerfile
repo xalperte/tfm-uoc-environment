@@ -17,3 +17,7 @@ RUN pip install dse-driver \
     && conda install -y -c conda-forge ipywidgets \
     && conda install -y nodejs \
     && pip install ipython-autotime
+
+ADD requirements.txt /home/jovyan/
+
+RUN pip install -r requirements.txt
