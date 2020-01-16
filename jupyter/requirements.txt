@@ -1,3 +1,6 @@
 # insert your python libs to install here
 yahoofinancials
+pandas_market_calendars
+cvxpy
 pyarrow
+pyspark[sql]

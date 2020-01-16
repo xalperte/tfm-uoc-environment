@@ -3,6 +3,9 @@ FROM jupyter/all-spark-notebook:latest
 
 LABEL maintainer="Xavier Alperte <javier.alperte@gmail.com>"
 
+# Make pyarrow available in pyspark
+RUN $CONDA_DIR/bin/pip install pyarrow pyspark[sql]
+
 USER root
 
 RUN pip install jupyter_contrib_nbextensions \
