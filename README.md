@@ -45,8 +45,8 @@ mkdir -p ./data/cassandra
 The following are the containers we have available for development in the backend:
 
     - tfm-uoc-crawling-system-app: the TFM UOC Crawling APP with Bovespa Crawler.       
-    - tfm-uoc-crawling-system-producer: The TFM UOC Producer APP for Bovespa Crawler.
-    - tfm-uoc-crawling-system-consumer: The TFM UOC Consumer APP for Bovespa Crawler.
+    - tfm-uoc-bovespa-producer: The producer of the Bovespa Crawler.
+    - tfm-uoc-bovespa-consumer: The consumer of the Bovespa Crawler.
     - tfm-uoc-spark: The TFM Processing Service with Jupiter Notebooks and Spark.
     
 ## Start the TFM UOC Crawling APP
@@ -91,23 +91,23 @@ Instruction to import initial data in postgres database for Gatherer
 cat initial_data/admin_user.sql | sed -e 's/@TFM_UOC_USER_EMAIL@/'"$TFM_UOC_USER_EMAIL"'/g' | docker exec -i tfm_uoc_postgres psql -U tfm_uoc
 ```
 
-## Start the TFM UOC Crawling Consumer
+## Start the consumer of the Bovespa crawler
 
 The consumer process is a daemon process responsible for listening for new
 crawling tasks. In this case, the process is listening for new Bovespa files
 to download, cache, and process. 
 
 ```shell script
-docker-compose up -d tfm-uoc-crawling-system-consume
+docker-compose up -d tfm-uoc-bovespa-consume
 ```
 
-## Start the TFM UOC Crawling Producer
+## Start the producer of the Bovespa crawler
 
 When we were ready, we can start the producer process in order to detect new
 files to process in Bovespa.
 
 ```shell script
-docker-compose up -d tfm-uoc-crawling-system-producer
+docker-compose up -d tfm-uoc-bovespa-producer
 ```
 
 When the process ends of checking all the companies for new financial reports,

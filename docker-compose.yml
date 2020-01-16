@@ -100,7 +100,7 @@ services:
     networks:
       - tfm-uoc-backend
 
-  tfm-uoc-crawling-system-producer:
+  tfm-uoc-bovespa-producer:
     image: xalperte/tfm-uoc-crawling-system:latest
     build:
       context: ../tfm_uoc_crawling_system
@@ -115,8 +115,8 @@ services:
       - tfm-uoc-redis
       - tfm-uoc-dse
     shm_size: 512mb
-    container_name: tfm_uoc_crawling_system_producer
-    hostname: tfm_uoc_crawling_system_producer
+    container_name: tfm_uoc_bovespa_producer
+    hostname: tfm_uoc_bovespa_producer
     command: python manage.py crawl_params bovespa  --workers-num 15 --chromium-bin-file /usr/bin/chromium --io-gs-project centering-badge-212119 --cache-dir "gs://davinci_example_bovespa" --local-dir "fs:///tfm_uoc_crawling_system/cache"
     volumes:
       - ../tfm_uoc_crawling_system:/tfm_uoc_crawling_system
@@ -124,7 +124,7 @@ services:
     networks:
       - tfm-uoc-backend
 
-  tfm-uoc-crawling-system-consumer:
+  tfm-uoc-bovespa-consumer:
     image: xalperte/tfm-uoc-crawling-system:latest
     build:
       context: ../tfm_uoc_crawling_system
@@ -139,8 +139,8 @@ services:
       - tfm-uoc-redis
       - tfm-uoc-dse
     shm_size: 512mb
-    container_name: tfm_uoc_crawling_system_consumer
-    hostname: tfm_uoc_crawling_system_consumer
+    container_name: tfm_uoc_bovespa_consumer
+    hostname: tfm_uoc_bovespa_consumer
     command: python manage.py crawl bovespa --workers-num 20 --chromium-bin-file /usr/bin/chromium --io-gs-project centering-badge-212119 --cache-dir "gs://davinci_example_bovespa" --local-dir "fs://tfm_uoc_crawling_system/cache"
     volumes:
       - ../tfm_uoc_crawling_system:/tfm_uoc_crawling_system
